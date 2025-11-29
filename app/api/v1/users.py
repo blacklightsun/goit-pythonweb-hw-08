@@ -9,7 +9,7 @@
 
 # @router.post("/", response_model=UserResponse)
 # async def create_user(
-#     user_in: UserCreate, 
+#     user_in: UserCreate,
 #     db: AsyncSession = Depends(deps.get_db)
 # ):
 #     # Викликаємо CRUD, роутер сам нічого не пише в базу

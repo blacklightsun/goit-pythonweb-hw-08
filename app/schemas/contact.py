@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
 
+
 class ContactCreate(BaseModel):
     firstname: str
     lastname: str

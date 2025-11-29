@@ -8,7 +8,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.db.base import Base # імпортуємо Base з нашого додатку
+from app.db.base import Base  # імпортуємо Base з нашого додатку
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,6 +23,7 @@ sys.path.append(os.getcwd())
 # --- 2. ІМПОРТ НАЛАШТУВАНЬ ТА МОДЕЛЕЙ ---
 # Імпортуємо наш конфіг, щоб взяти URL бази даних
 from app.core.config import settings
+
 # Імпортуємо Base саме з файлу-агрегатора (де зібрані всі моделі)
 from app.db.base import Base
 
@@ -49,6 +50,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 # --- 5. РЕЖИМ OFFLINE (Генерація SQL скриптів без підключення) ---
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -73,12 +75,14 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 # --- 6. ДОПОМІЖНА ФУНКЦІЯ ДЛЯ СИНХРОННОГО ЗАПУСКУ ---
 def do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()
+
 
 # --- 7. РЕЖИМ ONLINE (Реальне застосування міграцій) ---
 async def run_async_migrations() -> None:
