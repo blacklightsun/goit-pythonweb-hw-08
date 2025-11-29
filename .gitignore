@@ -1,0 +1,12 @@
+.git/
+.venv/
+__pycache__/
+*.pyc
+.env
+.ruff_cache/
+pg_data/
+bin/
+
+# IDE specific files
+.vscode/
+
