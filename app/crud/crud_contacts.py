@@ -15,10 +15,10 @@ async def get_contacts(db: AsyncSession, skip: int = 0, limit: int = 10):
 
 # --- CREATE ---
 async def create_contact(db: AsyncSession, contact_in: ContactCreate):
-    ''' Створює новий контакт у базі даних '''
+    """Створює новий контакт у базі даних"""
     if not await check_contact_email_exists(db, contact_in.email):
         return None
-    
+
     if not await check_contact_phone_exists(db, contact_in.phone_number):
         return None
 
@@ -56,7 +56,7 @@ async def update_contact(
     if contact_update.email:
         if not await check_contact_email_exists(db, contact_update.email):
             return None
-    
+
     if contact_update.phone_number:
         if not await check_contact_phone_exists(db, contact_update.phone_number):
             return None
@@ -106,7 +106,7 @@ async def get_contacts_by_query(
 async def get_contacts_by_birthdays(
     db: AsyncSession, days_ahead: int, skip: int = 0, limit: int = 10
 ):
-    from datetime import date, datetime, timedelta
+    from datetime import date, timedelta
 
     def is_birthday_within_next_seven_days(birthday_str):
         """Перевіряє, чи день народження (YYYY-MM-DD string) припадає на найближчі 7 днів."""
@@ -114,30 +114,32 @@ async def get_contacts_by_birthdays(
         current_year = date.today().year
         # month_day = datetime.strptime(birthday_str, '%Y-%m-%d').replace(year=current_year).date()
         month_day = birthday_str.replace(year=current_year)
-        
+
         today = date.today()
         seven_days_before = today - timedelta(days=days_ahead)
-        
+
         return today >= month_day >= seven_days_before
-    
+
     # Отримуємо всі контакти (або великий список) з бази даних
     all_contacts = await db.execute(select(Contact))
 
     # Фільтруємо в Python
     upcoming_birthdays = [
-        contact for contact in all_contacts.scalars().all()
+        contact
+        for contact in all_contacts.scalars().all()
         if is_birthday_within_next_seven_days(contact.birthday)
     ]
     return upcoming_birthdays
 
 
-async def check_contact_email_exists(db: AsyncSession, email: str | None) -> bool :
+async def check_contact_email_exists(db: AsyncSession, email: str | None) -> bool:
     stmt = select(Contact).where(Contact.email == email)
     result = await db.execute(stmt)
     contact = result.scalars().first()
     return contact is not None
 
-async def check_contact_phone_exists(db: AsyncSession, phone: str | None) -> bool :
+
+async def check_contact_phone_exists(db: AsyncSession, phone: str | None) -> bool:
     stmt = select(Contact).where(Contact.phone_number == phone)
     result = await db.execute(stmt)
     contact = result.scalars().first()

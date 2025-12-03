@@ -2,12 +2,13 @@ from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import date
 from typing import Optional
 
+
 class ContactCreate(BaseModel):
     firstname: str
     lastname: str
     email: EmailStr
     phone_number: str
-    birthday: date  
+    birthday: date
     other_details: str
     owner_id: int
 

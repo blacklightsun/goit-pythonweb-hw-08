@@ -1,9 +1,10 @@
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer, String, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_class import Base
+
 # from app.models.user import User
-from sqlalchemy import String, Date
 from datetime import date
+
 
 class Contact(Base):
     __tablename__ = "contacts"

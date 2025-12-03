@@ -17,15 +17,15 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 10):
 async def create_user(db: AsyncSession, user_in: UserCreate):
     # Створюємо об'єкт моделі
     # Тут треба хешувати пароль, але для спрощення поки пишемо plain text
-    
+
     db_user = await get_user_by_username(db, user_in.username)
     if db_user:
         return None
-    
+
     db_user = User(
         username=user_in.username,
-        password_hash=user_in.password + '_hashed', # Тимчасове хешування
-        role=user_in.role  
+        password_hash=user_in.password + "_hashed",  # Тимчасове хешування
+        role=user_in.role,
     )
     db.add(db_user)
     await db.commit()  # Зберігаємо в БД
@@ -40,9 +40,7 @@ async def get_user(db: AsyncSession, user_id: int):
 
 
 # --- UPDATE ---
-async def update_user(
-    db: AsyncSession, user_id: int, user_update: UserUpdate
-):
+async def update_user(db: AsyncSession, user_id: int, user_update: UserUpdate):
     # Спочатку знаходимо об'єкт
     db_user = await get_user(db, user_id)
     if not db_user:
@@ -58,6 +56,7 @@ async def update_user(
     await db.refresh(db_user)
     return db_user
 
+
 # --- DELETE ---
 async def delete_user(db: AsyncSession, user_id: int):
     db_user = await get_user(db, user_id)
@@ -67,6 +66,7 @@ async def delete_user(db: AsyncSession, user_id: int):
     await db.delete(db_user)
     await db.commit()
     return db_user
+
 
 # --- GET USER BY USERNAME ---
 async def get_user_by_username(db: AsyncSession, username: str):
@@ -126,4 +126,3 @@ async def get_user_by_username(db: AsyncSession, username: str):
 #     stmt = select(User).where(User.role == role).offset(skip).limit(limit)
 #     result = await db.execute(stmt)
 #     return result.scalars().all()
-

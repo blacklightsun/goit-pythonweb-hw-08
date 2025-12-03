@@ -13,7 +13,10 @@ router = APIRouter()
 # 7. GET (Read All birthdaays in next n days)
 @router.get("/birthdays", response_model=List[ContactResponse])
 async def read_contacts_for_birthdays(
-    days_ahead: int = 7, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(deps.get_db)
+    days_ahead: int = 7,
+    skip: int = 0,
+    limit: int = 10,
+    db: AsyncSession = Depends(deps.get_db),
 ):
     contacts = await crud_contacts.get_contacts_by_birthdays(
         db, days_ahead=days_ahead, skip=skip, limit=limit
@@ -24,15 +27,17 @@ async def read_contacts_for_birthdays(
 # 1. GET (Read All with optional search query parameter)
 @router.get("/", response_model=List[ContactResponse])
 async def read_contacts(
-    skip: int = 0, 
-    limit: int = 10, 
-    query: str | None = None, # Зробіть query опціональним
-    db: AsyncSession = Depends(deps.get_db)
+    skip: int = 0,
+    limit: int = 10,
+    query: str | None = None,  # Зробіть query опціональним
+    db: AsyncSession = Depends(deps.get_db),
 ):
     if query:
         # Якщо query передано - шукаємо
-        return await crud_contacts.get_contacts_by_query(db, query=query, skip=skip, limit=limit)
-    
+        return await crud_contacts.get_contacts_by_query(
+            db, query=query, skip=skip, limit=limit
+        )
+
     # Якщо query немає - повертаємо всі
     return await crud_contacts.get_contacts(db, skip=skip, limit=limit)
 
@@ -70,7 +75,10 @@ async def update_contact(
 ):
     contact = await crud_contacts.update_contact(db, contact_id, contact_update)
     if not contact:
-        raise HTTPException(status_code=404, detail="Contact not found or contact with this email or phone number already exists")
+        raise HTTPException(
+            status_code=404,
+            detail="Contact not found or contact with this email or phone number already exists",
+        )
     return contact
 
 
