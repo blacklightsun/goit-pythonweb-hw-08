@@ -5,11 +5,13 @@ from typing import Optional
 # Базовий клас (спільні поля)
 class UserBase(BaseModel):
     username: str
-    # role: str
+    role: str
 
 
 # Схема для створення (POST) - пароль обов'язковий
 class UserCreate(UserBase):
+    # username: str
+    # role: str
     password: str
 
 
@@ -22,7 +24,8 @@ class UserUpdate(BaseModel):
 # Схема для відповіді (GET) - повертаємо ID, але приховуємо пароль
 class UserResponse(UserBase):
     id: int
-    hashed_password: str
+    # username: str
+    # # password_hash: str
     # role: str
 
     # Цей конфіг дозволяє Pydantic читати дані прямо з ORM-об'єктів SQLAlchemy

@@ -8,10 +8,17 @@ class ContactCreate(BaseModel):
     phone_number: str
     birthday: str  # Format: YYYY-MM-DD
     other_details: str
+    owner_id: int
 
 
-class ContactUpdate(ContactCreate):
-    pass
+class ContactUpdate(BaseModel):
+    firstname: str | None = None
+    lastname: str | None = None
+    email: EmailStr | None = None
+    phone_number: str | None = None
+    birthday: str | None = None  # Format: YYYY-MM-DD
+    other_details: str | None = None
+    # owner_id: int | None = None # Usually we don't update owner_id
 
 
 class ContactResponse(ContactCreate):
