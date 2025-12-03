@@ -112,7 +112,8 @@ async def get_contacts_by_birthdays(
         """Перевіряє, чи день народження (YYYY-MM-DD string) припадає на найближчі 7 днів."""
         # Перетворюємо рядок на об'єкт дати (використовуючи будь-який рік, наприклад, поточний)
         current_year = date.today().year
-        month_day = datetime.strptime(birthday_str, '%Y-%m-%d').replace(year=current_year).date()
+        # month_day = datetime.strptime(birthday_str, '%Y-%m-%d').replace(year=current_year).date()
+        month_day = birthday_str.replace(year=current_year)
         
         today = date.today()
         seven_days_before = today - timedelta(days=days_ahead)

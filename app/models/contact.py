@@ -2,7 +2,8 @@ from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base_class import Base
 # from app.models.user import User
-
+from sqlalchemy import String, Date
+from datetime import date
 
 class Contact(Base):
     __tablename__ = "contacts"
@@ -12,7 +13,7 @@ class Contact(Base):
     lastname: Mapped[str] = mapped_column(String(50))
     email: Mapped[str] = mapped_column(String(120), unique=True)
     phone_number: Mapped[str] = mapped_column(String(20), unique=True)
-    birthday: Mapped[str] = mapped_column(String(10))  # Format: YYYY-MM-DD
+    birthday: Mapped[date] = mapped_column(Date)  # Format: YYYY-MM-DD
     other_details: Mapped[str] = mapped_column(String(250))
     owner_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=False

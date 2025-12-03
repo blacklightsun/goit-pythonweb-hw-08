@@ -1,12 +1,13 @@
 from pydantic import BaseModel, EmailStr, ConfigDict
-
+from datetime import date
+from typing import Optional
 
 class ContactCreate(BaseModel):
     firstname: str
     lastname: str
     email: EmailStr
     phone_number: str
-    birthday: str  # Format: YYYY-MM-DD
+    birthday: date  
     other_details: str
     owner_id: int
 
@@ -16,7 +17,7 @@ class ContactUpdate(BaseModel):
     lastname: str | None = None
     email: EmailStr | None = None
     phone_number: str | None = None
-    birthday: str | None = None  # Format: YYYY-MM-DD
+    birthday: Optional[date] = None
     other_details: str | None = None
     # owner_id: int | None = None # Usually we don't update owner_id
 
