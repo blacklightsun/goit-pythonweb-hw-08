@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.models.user import User
-from app.schemas.user import UserCreate, UserUpdate,
+from app.schemas.user import UserCreate, UserUpdate
 
 
 # --- READ (Get All) ---
@@ -10,7 +10,6 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 10):
     # select(User) створює запит SELECT * FROM users
     stmt = select(User).offset(skip).limit(limit)
     result = await db.execute(stmt)
-    # scalars().all() перетворює брудний результат SQL у список об'єктів Python
     return result.scalars().all()
 
 
@@ -69,6 +68,13 @@ async def delete_user(db: AsyncSession, user_id: int):
     await db.commit()
     return db_user
 
+# --- GET USER BY USERNAME ---
+async def get_user_by_username(db: AsyncSession, username: str):
+    stmt = select(User).where(User.username == username)
+    result = await db.execute(stmt)
+    return result.scalars().first()
+
+
 # # --- AUTHENTICATE USER ---
 # async def authenticate_user(db: AsyncSession, username: str, password: str):
 #     stmt = select(User).where(User.username == username)
@@ -78,11 +84,6 @@ async def delete_user(db: AsyncSession, user_id: int):
 #         return user
 #     return None
 
-# --- GET USER BY USERNAME ---
-async def get_user_by_username(db: AsyncSession, username: str):
-    stmt = select(User).where(User.username == username)
-    result = await db.execute(stmt)
-    return result.scalars().first()
 
 # # --- CHANGE USER ROLE ---
 # async def change_user_role(db: AsyncSession, user_id: int, new_role: str):

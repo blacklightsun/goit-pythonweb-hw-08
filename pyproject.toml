@@ -10,6 +10,8 @@ dependencies = [
     "fastapi>=0.122.0",
     "mypy>=1.19.0",
     "pydantic-settings>=2.12.0",
+    "pydantic[email]>=2.12.5",
     "python-dotenv>=1.2.1",
     "sqlalchemy>=2.0.44",
+    "uvicorn>=0.38.0",
 ]

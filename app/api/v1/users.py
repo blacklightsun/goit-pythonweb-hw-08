@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.api import deps
-from app.schemas.contact import UserCreate, UserUpdate, UserResponse
+from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.crud import crud_users
 
 # Оголошення
@@ -23,7 +23,7 @@ async def read_users(
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user_in: UserCreate, db: AsyncSession = Depends(deps.get_db)):
     # Тут можна додати перевірку, чи існує вже такий email
-    user = await crud_users.crud_users.create_user(db, user_in)
+    user = await crud_users.create_user(db, user_in)
     if not user:
         raise HTTPException(status_code=409, detail="User already exists")
     return user
@@ -55,5 +55,4 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(deps.get_db)):
     user = await crud_users.delete_user(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    # При 204 Content ми нічого не повертаємо (return None)
     return None
