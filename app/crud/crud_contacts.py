@@ -16,10 +16,10 @@ async def get_contacts(db: AsyncSession, skip: int = 0, limit: int = 10):
 # --- CREATE ---
 async def create_contact(db: AsyncSession, contact_in: ContactCreate):
     """Створює новий контакт у базі даних"""
-    if not await check_contact_email_exists(db, contact_in.email):
+    if await check_contact_email_exists(db, contact_in.email):
         return None
 
-    if not await check_contact_phone_exists(db, contact_in.phone_number):
+    if await check_contact_phone_exists(db, contact_in.phone_number):
         return None
 
     # Створюємо об'єкт моделі
@@ -54,11 +54,11 @@ async def update_contact(
         return None
 
     if contact_update.email:
-        if not await check_contact_email_exists(db, contact_update.email):
+        if await check_contact_email_exists(db, contact_update.email):
             return None
 
     if contact_update.phone_number:
-        if not await check_contact_phone_exists(db, contact_update.phone_number):
+        if await check_contact_phone_exists(db, contact_update.phone_number):
             return None
 
     # Оновлюємо тільки ті поля, які прийшли (exclude_unset=True)
@@ -116,9 +116,9 @@ async def get_contacts_by_birthdays(
         month_day = birthday_str.replace(year=current_year)
 
         today = date.today()
-        seven_days_before = today - timedelta(days=days_ahead)
+        seven_days_after = today + timedelta(days=days_ahead)
 
-        return today >= month_day >= seven_days_before
+        return today <= month_day <= seven_days_after
 
     # Отримуємо всі контакти (або великий список) з бази даних
     all_contacts = await db.execute(select(Contact))
