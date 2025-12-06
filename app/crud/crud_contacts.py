@@ -1,4 +1,7 @@
 # from ast import stmt
+from datetime import date, timedelta
+from sqlalchemy import select, func, cast, Integer, case, bindparam
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -16,10 +19,10 @@ async def get_contacts(db: AsyncSession, skip: int = 0, limit: int = 10):
 # --- CREATE ---
 async def create_contact(db: AsyncSession, contact_in: ContactCreate):
     """Створює новий контакт у базі даних"""
-    if await check_contact_email_exists(db, contact_in.email):
+    if await check_contact_email_exists_for_creating(db, contact_in.email):
         return None
 
-    if await check_contact_phone_exists(db, contact_in.phone_number):
+    if await check_contact_phone_exists_for_creating(db, contact_in.phone_number):
         return None
 
     # Створюємо об'єкт моделі
@@ -54,11 +57,11 @@ async def update_contact(
         return None
 
     if contact_update.email:
-        if await check_contact_email_exists(db, contact_update.email):
+        if await check_contact_email_exists_for_updating(db, contact_update.email, contact_id):
             return None
 
     if contact_update.phone_number:
-        if await check_contact_phone_exists(db, contact_update.phone_number):
+        if await check_contact_phone_exists_for_updating(db, contact_update.phone_number, contact_id):
             return None
 
     # Оновлюємо тільки ті поля, які прийшли (exclude_unset=True)
@@ -103,44 +106,89 @@ async def get_contacts_by_query(
 
 
 # --- READ (Get All Users) ---
-async def get_contacts_by_birthdays(
-    db: AsyncSession, days_ahead: int, skip: int = 0, limit: int = 10
-):
-    from datetime import date, timedelta
+# async def get_contacts_by_birthdays(
+#     db: AsyncSession, days_ahead: int, skip: int = 0, limit: int = 10
+# ):
+#     from datetime import date, timedelta
 
-    def is_birthday_within_next_seven_days(birthday_str):
-        """Перевіряє, чи день народження (YYYY-MM-DD string) припадає на найближчі 7 днів."""
-        # Перетворюємо рядок на об'єкт дати (використовуючи будь-який рік, наприклад, поточний)
-        current_year = date.today().year
-        # month_day = datetime.strptime(birthday_str, '%Y-%m-%d').replace(year=current_year).date()
-        month_day = birthday_str.replace(year=current_year)
+#     def is_birthday_within_next_seven_days(birthday_str):
+#         """Перевіряє, чи день народження (YYYY-MM-DD string) припадає на найближчі 7 днів."""
+#         # Перетворюємо рядок на об'єкт дати (використовуючи будь-який рік, наприклад, поточний)
+#         current_year = date.today().year
+#         # month_day = datetime.strptime(birthday_str, '%Y-%m-%d').replace(year=current_year).date()
+#         month_day = birthday_str.replace(year=current_year)
 
-        today = date.today()
-        seven_days_after = today + timedelta(days=days_ahead)
+#         today = date.today()
+#         seven_days_after = today + timedelta(days=days_ahead)
 
-        return today <= month_day <= seven_days_after
+#         return today <= month_day <= seven_days_after
 
-    # Отримуємо всі контакти (або великий список) з бази даних
-    all_contacts = await db.execute(select(Contact))
+#     # Отримуємо всі контакти (або великий список) з бази даних
+#     all_contacts = await db.execute(select(Contact))
 
-    # Фільтруємо в Python
-    upcoming_birthdays = [
-        contact
-        for contact in all_contacts.scalars().all()
-        if is_birthday_within_next_seven_days(contact.birthday)
-    ]
-    return upcoming_birthdays
+#     # Фільтруємо в Python
+#     upcoming_birthdays = [
+#         contact
+#         for contact in all_contacts.scalars().all()
+#         if is_birthday_within_next_seven_days(contact.birthday)
+#     ]
+#     return upcoming_birthdays
 
 
-async def check_contact_email_exists(db: AsyncSession, email: str | None) -> bool:
+async def get_contacts_by_birthdays(db: AsyncSession, days_ahead: int = 7, skip: int = 0, limit: int = 100):
+    today = date.today()
+    end_date = today + timedelta(days=days_ahead)
+
+    month_expr = cast(func.extract("month", Contact.birthday), Integer)
+    day_expr = cast(func.extract("day", Contact.birthday), Integer)
+    current_year_expr = cast(func.extract("year", func.current_date()), Integer)
+
+    birthday_this_year = func.make_date(current_year_expr, month_expr, day_expr)
+
+    next_birthday = case(
+        (
+            birthday_this_year < func.current_date(),
+            func.make_date(current_year_expr + 1, month_expr, day_expr),
+        ),
+        else_=birthday_this_year,
+    ).label("next_birthday")
+
+    stmt = (
+        select(Contact)
+        .where(next_birthday.between(func.current_date(), bindparam("end_date")))
+        .order_by(next_birthday)
+        .offset(skip)
+        .limit(limit)
+    )
+
+    result = await db.execute(stmt.params(end_date=end_date))
+    return result.scalars().all()
+
+
+
+
+async def check_contact_email_exists_for_creating(db: AsyncSession, email: str | None) -> bool:
     stmt = select(Contact).where(Contact.email == email)
     result = await db.execute(stmt)
     contact = result.scalars().first()
     return contact is not None
 
 
-async def check_contact_phone_exists(db: AsyncSession, phone: str | None) -> bool:
+async def check_contact_phone_exists_for_creating(db: AsyncSession, phone: str | None) -> bool:
     stmt = select(Contact).where(Contact.phone_number == phone)
+    result = await db.execute(stmt)
+    contact = result.scalars().first()
+    return contact is not None
+
+async def check_contact_email_exists_for_updating(db: AsyncSession, email: str | None, contact_id: int) -> bool:
+    stmt = select(Contact).where(Contact.email == email, Contact.id != contact_id)
+    result = await db.execute(stmt)
+    contact = result.scalars().first()
+    return contact is not None
+
+
+async def check_contact_phone_exists_for_updating(db: AsyncSession, phone: str | None, contact_id: int) -> bool:
+    stmt = select(Contact).where(Contact.phone_number == phone, Contact.id != contact_id)
     result = await db.execute(stmt)
     contact = result.scalars().first()
     return contact is not None
